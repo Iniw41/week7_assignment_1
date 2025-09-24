@@ -41,41 +41,82 @@ namespace HumanApp
             }
         }
 
+        private static (string FirstName, string LastName) GetNameInput()
+        {
+            string firstName;
+            string lastName;
+
+            do
+            {
+                Console.Write("\nEnter First Name: ");
+                firstName = Console.ReadLine()?.Trim();
+                if (string.IsNullOrEmpty(firstName))
+                    Console.WriteLine("First name cannot be empty.");
+            } while (string.IsNullOrEmpty(firstName));
+
+            do
+            {
+                Console.Write("Enter Last Name: ");
+                lastName = Console.ReadLine()?.Trim();
+                if (string.IsNullOrEmpty(lastName))
+                    Console.WriteLine("Last name cannot be empty.");
+            } while (string.IsNullOrEmpty(lastName));
+
+            return (firstName, lastName);
+        }
+
+
         static void AddUser()
         {
             Console.Clear();
-            Console.WriteLine("Select User Type:");
-            Console.WriteLine("1. Student");
-            Console.WriteLine("2. Worker");
-            Console.Write("Choice: ");
-            var key = Console.ReadKey(true);
 
-            Console.Write("\nEnter First Name: ");
-            string firstName = Console.ReadLine();
-            Console.Write("Enter Last Name: ");
-            string lastName = Console.ReadLine();
-
-            if (key.Key == ConsoleKey.D1) // Student
+            
+            while (true)
             {
-                var student = new Student(firstName, lastName);
-                student.EnterGrades();
-                users.Add(student);
+                Console.Clear();
+                Console.WriteLine("Select User Type:");
+                Console.WriteLine("1. Student");
+                Console.WriteLine("2. Worker");
+                Console.WriteLine("3. Cancel");
+                Console.Write("\nPress 1, 2, or 3: ");
+
+                string firstName = null;
+                string lastName = null;
+
+
+                var keypress = Console.ReadKey(true);
+
+                switch (keypress.Key)
+                {
+                    case ConsoleKey.D1:
+                        (firstName, lastName) = GetNameInput();
+                        var student = new Student(firstName, lastName);
+                        student.EnterGrades();
+                        users.Add(student);
+                        SaveUsers();
+                        Console.WriteLine("\nStudent added successfully!");
+                        Console.ReadKey();
+                        return; // exit loop after adding
+                    case ConsoleKey.D2:
+                        (firstName, lastName) = GetNameInput();
+                        decimal wage = GetDecimal("Enter total wage: ");
+                        int hours = GetInt("Enter hours worked: ");
+                        var worker = new Worker(firstName, lastName, wage, hours);
+                        users.Add(worker);
+                        SaveUsers();
+                        Console.WriteLine("\nWorker added successfully!");
+                        Console.ReadKey();
+                        return; // exit loop after adding
+                    case ConsoleKey.D3:
+                        Console.WriteLine("\nCancelled adding user.");
+                        Console.ReadKey();
+                        return;
+                    default:
+                        Console.WriteLine("\nInvalid selection. Please press 1, 2, or 3.");
+                        Console.ReadKey();
+                        break;
+                }
             }
-            else if (key.Key == ConsoleKey.D2) // Worker
-            {
-                decimal wage = GetDecimal("Enter total wage: ");
-                int hours = GetInt("Enter hours worked: ");
-                var worker = new Worker(firstName, lastName, wage, hours);
-                users.Add(worker);
-            } 
-            else
-            {
-                Console.WriteLine("Invalid input");
-            }
-
-            SaveUsers();
-            Console.WriteLine("\nUser added successfully!");
-            Console.ReadKey();
         }
 
         static void ViewUser()
@@ -198,16 +239,16 @@ namespace HumanApp
 
         public void EnterGrades()
         {
-            Console.WriteLine("Enter grades (type 'done' to finish):");
             while (true)
             {
                 Console.Write("Grade: ");
                 string input = Console.ReadLine();
-                if (input.ToLower() == "done") break;
 
                 if (double.TryParse(input, out double grade))
                 {
                     Grades.Add(grade);
+                    Console.ReadKey();
+                    break;
                 }
                 else
                 {
